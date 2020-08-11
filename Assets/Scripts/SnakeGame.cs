@@ -11,7 +11,7 @@ public class SnakeGame : MonoBehaviour
     // Time in seconds between snake movements.
     public float StepPeriod;
 
-    // Direction in which snakes moves.
+    // Direction in which snake moves.
     public Vector3Int SnakeDirection;
 
     // Time passed since last step.
@@ -27,8 +27,8 @@ public class SnakeGame : MonoBehaviour
     {
         var levelScale = transform.localScale;
 
-        // offset the position so that level matches grid
-        // for even scale offset is -0.5 for odd scale there is no offset
+        // Offset the position so that level matches grid.
+        // For even scale offset is -0.5 for odd scale there is no offset.
         var positionOffset = new Vector3(
             (levelScale.x % 2) / 2f - 0.5f,
             (levelScale.y % 2) / 2f - 0.5f,
@@ -38,7 +38,7 @@ public class SnakeGame : MonoBehaviour
         transform.position += positionOffset;
         var levelPosition = transform.position;
 
-        // Level boundaries setup in respect of its position
+        // Level boundaries setup in respect of its position.
         _maxX = Mathf.FloorToInt(levelPosition.x + levelScale.x / 2);
         _minX = Mathf.CeilToInt(levelPosition.x + -levelScale.x / 2);
 
