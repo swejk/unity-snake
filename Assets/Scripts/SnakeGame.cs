@@ -8,6 +8,9 @@ public class SnakeGame : MonoBehaviour
     // Visual representation of snake.
     public GameObject Snake;
 
+    // Gameobject prefab spawned in place of food.
+    public GameObject FoodPrefab;
+
     // Time in seconds between snake movements.
     public float StepPeriod;
 
@@ -17,6 +20,9 @@ public class SnakeGame : MonoBehaviour
     // Time passed since last step.
     private float _currentPeriod;
 
+    // Spawned instance of a food
+    private GameObject _foodInstance;
+
     // Boundaries
     private int _minX;
     private int _maxX;
@@ -25,6 +31,9 @@ public class SnakeGame : MonoBehaviour
 
     private void Awake()
     {
+        _foodInstance = Instantiate(FoodPrefab);
+        _foodInstance.transform.position = RandomLevelPosition();
+
         var levelScale = transform.localScale;
 
         // Offset the position so that level matches grid.
@@ -52,6 +61,7 @@ public class SnakeGame : MonoBehaviour
 
         UpdateSnakeDirection();
         UpdateSnakePosition();
+        UpdateFood();
     }
 
     private void UpdateSnakeDirection()
@@ -108,5 +118,23 @@ public class SnakeGame : MonoBehaviour
             // Step was made, reset the period.
             _currentPeriod = _currentPeriod - StepPeriod;
         }
+    }
+
+    private void UpdateFood()
+    {
+        if (Snake.transform.position == _foodInstance.transform.position)
+        {
+            _foodInstance.transform.position = RandomLevelPosition();
+        }
+    }
+
+    // Generates random position within level bounds
+    private Vector3 RandomLevelPosition()
+    {
+        return new Vector3(
+            Random.Range(_minX, _maxX + 1),
+            Random.Range(_minY, _maxY + 1),
+            0
+        );
     }
 }
