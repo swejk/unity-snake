@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 /**
  * Manages the core gameplay of snake game.
@@ -7,6 +8,9 @@ public class SnakeGame : MonoBehaviour
 {
     // Visual representation of snake.
     public GameObject Snake;
+    
+    // Gameobject prefab of snakes single tail segment.
+    public GameObject SnakeTailSegmentPrefab;
 
     // Gameobject prefab spawned in place of food.
     public GameObject FoodPrefab;
@@ -20,19 +24,27 @@ public class SnakeGame : MonoBehaviour
     // Time passed since last step.
     private float _currentPeriod;
 
-    // Spawned instance of a food
+    // Spawned instance of a food.
     private GameObject _foodInstance;
 
+    // GameObject chain representing snake tail.
+    private List<GameObject> _tailSegments;
+
+    // Position of last snake segment.
+    private Vector3 _snakeEndPosition;
+
+    // Flag whether the player lost the game.
+    private bool _gameOver;
+    
     // Boundaries
     private int _minX;
     private int _maxX;
     private int _minY;
     private int _maxY;
-
+    
     private void Awake()
     {
-        _foodInstance = Instantiate(FoodPrefab);
-        _foodInstance.transform.position = RandomLevelPosition();
+        _tailSegments = new List<GameObject>();
 
         var levelScale = transform.localScale;
 
@@ -53,15 +65,27 @@ public class SnakeGame : MonoBehaviour
 
         _maxY = Mathf.FloorToInt(levelPosition.y + levelScale.y / 2);
         _minY = Mathf.CeilToInt(levelPosition.y + -levelScale.y / 2);
+                
+        _foodInstance = Instantiate(FoodPrefab);
+        _foodInstance.transform.position = RandomLevelPosition();
     }
 
     private void Update()
     {
-        _currentPeriod += Time.deltaTime;
-
-        UpdateSnakeDirection();
-        UpdateSnakePosition();
-        UpdateFood();
+        if (!_gameOver)
+        {
+            _currentPeriod += Time.deltaTime;
+            
+            UpdateSnakeDirection();
+            UpdateSnakePosition();
+            UpdateFood();
+            
+            if (IsCollidingTail(Snake.transform.position))
+            {
+                Debug.Log("Game Over");
+                _gameOver = true;
+            }
+        }
     }
 
     private void UpdateSnakeDirection()
@@ -113,7 +137,19 @@ public class SnakeGame : MonoBehaviour
                 nextPosition.y = _maxY;
             }
 
+            var previousPosition = Snake.transform.position;
             Snake.transform.position = nextPosition;
+
+            // Update the tail segments positions.
+            // Each segment takes position of the previous segment.
+            foreach (var snakeSegment in _tailSegments)
+            {
+                nextPosition = previousPosition;
+                previousPosition = snakeSegment.transform.position;
+                snakeSegment.transform.position = nextPosition;
+            }
+
+            _snakeEndPosition = previousPosition;
 
             // Step was made, reset the period.
             _currentPeriod = _currentPeriod - StepPeriod;
@@ -122,19 +158,51 @@ public class SnakeGame : MonoBehaviour
 
     private void UpdateFood()
     {
-        if (Snake.transform.position == _foodInstance.transform.position)
+        if (IsCollidingHead(_foodInstance.transform.position))
         {
+            // Move the food to new position.
             _foodInstance.transform.position = RandomLevelPosition();
+
+            // Grow the snake tail.
+            var tailSegment = Instantiate(SnakeTailSegmentPrefab);
+            tailSegment.transform.position = _snakeEndPosition;
+            _tailSegments.Add(tailSegment);
         }
     }
 
-    // Generates random position within level bounds
+    // Generates random empty position within level bounds.
     private Vector3 RandomLevelPosition()
     {
-        return new Vector3(
-            Random.Range(_minX, _maxX + 1),
-            Random.Range(_minY, _maxY + 1),
-            0
-        );
+        Vector3 result;
+        do
+        {
+            result = new Vector3(
+                Random.Range(_minX, _maxX + 1),
+                Random.Range(_minY, _maxY + 1),
+                0
+            );
+        } while (IsCollidingHead(result) || IsCollidingTail(result));
+
+        return result;
+    }
+
+    // Checks whether given position is colliding with snake head.
+    private bool IsCollidingHead(Vector3 position)
+    {
+        return position == Snake.transform.position;
+    }
+    
+    // Checks whether given position is colliding with snake tail.
+    private bool IsCollidingTail(Vector3 position)
+    {
+        foreach (var tailSegment in _tailSegments)
+        {
+            if (tailSegment.transform.position == position)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

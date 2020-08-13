@@ -235,7 +235,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Snake: {fileID: 1151210779}
-  SnakeTailPrefab: {fileID: 0}
+  SnakeTailSegmentPrefab: {fileID: 6763690998414729153, guid: fad29371bcd397a438081eaadd4561d4,
+    type: 3}
   FoodPrefab: {fileID: 6714012221505618388, guid: 1fc735eb87e291b4a98ff732954bf549,
     type: 3}
   StepPeriod: 0.2
