@@ -6,6 +6,10 @@ using UnityEngine;
  */
 public class SnakeGame : MonoBehaviour
 {
+
+    // Score increment per food collected.
+    private const int ScorePerFood = 100;
+    
     // Visual representation of snake.
     public GameObject Snake;
     
@@ -35,12 +39,25 @@ public class SnakeGame : MonoBehaviour
 
     // Flag whether the player lost the game.
     private bool _gameOver;
+
+    // Current score.
+    private int _score;
     
     // Boundaries
     private int _minX;
     private int _maxX;
     private int _minY;
     private int _maxY;
+
+    public int GetScore()
+    {
+        return _score;
+    }
+
+    public bool IsGameOver()
+    {
+        return _gameOver;
+    }
     
     private void Awake()
     {
@@ -109,6 +126,7 @@ public class SnakeGame : MonoBehaviour
         {
             SnakeDirection = Vector3Int.left;
         }
+        
     }
 
     private void UpdateSnakePosition()
@@ -163,6 +181,8 @@ public class SnakeGame : MonoBehaviour
             // Move the food to new position.
             _foodInstance.transform.position = RandomLevelPosition();
 
+            _score += ScorePerFood;
+
             // Grow the snake tail.
             var tailSegment = Instantiate(SnakeTailSegmentPrefab);
             tailSegment.transform.position = _snakeEndPosition;
@@ -174,6 +194,7 @@ public class SnakeGame : MonoBehaviour
     private Vector3 RandomLevelPosition()
     {
         Vector3 result;
+        // This might in theory loop forever or too long when snake occupies too much of a level.
         do
         {
             result = new Vector3(
